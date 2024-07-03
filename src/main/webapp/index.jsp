@@ -1,8 +1,20 @@
 <html>
 <head>
-    <title>Hello, world</title>
+    <title>Catalog start page</title>
 </head>
-    <body>
-        <h3>Hello, world!</h3>
-    </body>
+<body>
+<h1>Catalog search page</h1>
+<form action="catalog/search" method="GET">
+    <h4>Searching books by title and/or year</h4>
+    Title: <input name="title"><br>
+    Year: <input name="year"><br>
+    <br>
+    <input type="submit" value="Search">
+</form>
+
+<br>
+<form action="auth/logout" method="GET">
+    <input type="submit" value="Logout">
+</form>
+</body>
 </html>
