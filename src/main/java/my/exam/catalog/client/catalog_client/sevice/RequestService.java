@@ -45,6 +45,8 @@ public class RequestService {
     private String basicCatalogLoginUrl;
     @Value("${catalog.request.search}")
     private String searchRequest;
+    @Value("${catalog.request.create.user}")
+    private String createUser;
 
     @PostConstruct
     private void configureRestTemplate() {
@@ -61,9 +63,8 @@ public class RequestService {
         }));
     }
 
-
-    public ResponseEntity<UserDto> authorize(UserDto user){
-        try{
+    public ResponseEntity<UserDto> authorize(UserDto user) {
+        try {
             String loginUrl = basicCatalogUrl + basicCatalogLoginUrl;
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -74,14 +75,41 @@ public class RequestService {
             ResponseEntity<UserDto> response = restTemplate.postForEntity(loginUrl, requestEntity, UserDto.class);
             log.info("Response: " + response);
             return response;
-        }catch (Exception e){
-            log.error("Something wrong: " + e );
+        } catch (Exception e) {
+            log.error("Something wrong: " + e);
             return null;
         }
     }
 
 
-    public List<BookDTO> findAll() throws Exception{
+    public ResponseEntity<UserDto> createUser(UserDto user) {
+        try {
+            String createUserUrl = basicCatalogUrl + basicCatalogContextUrl + createUser;
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set(HeaderValues.AUTHORIZATION, repo.getCurrentUserJwt());
+
+            HttpEntity<UserDto> requestEntry = new HttpEntity<>(user, headers);
+            ResponseEntity<UserDto> response = restTemplate.exchange(createUserUrl, HttpMethod.POST, requestEntry,
+                    UserDto.class);
+
+            switch (response.getStatusCode().value()) {
+                case (200):
+                    return ResponseEntity.ok(response.getBody());
+                case (403):
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new UserDto());
+            }
+
+
+        } catch (Exception e) {
+            log.error("Something wrong: " + e);
+        }
+        return null;
+    }
+
+    public List<BookDTO> findAll() throws Exception {
         try {
             String searchUrl = basicCatalogUrl + basicCatalogContextUrl;
             HttpHeaders headers = new HttpHeaders();
@@ -92,12 +120,13 @@ public class RequestService {
 
             List<BookDTO> books = new ArrayList<>();
             HttpEntity<List<BookDTO>> requestEntry = new HttpEntity<>(books, headers);
-            ResponseEntity<List<BookDTO>> response = restTemplate.exchange( searchUrl, HttpMethod.GET, requestEntry,
-                    new ParameterizedTypeReference<List<BookDTO>>(){} );
+            ResponseEntity<List<BookDTO>> response = restTemplate.exchange(searchUrl, HttpMethod.GET, requestEntry,
+                    new ParameterizedTypeReference<List<BookDTO>>() {
+                    });
             HttpStatusCode status = response.getStatusCode();
             return response.getBody();
-        }catch (Exception e){
-            log.error("Something wrong: " + e );
+        } catch (Exception e) {
+            log.error("Something wrong: " + e);
             return null;
         }
     }
@@ -105,7 +134,7 @@ public class RequestService {
     public List<BookDTO> searchByTitleAndYear(String title, Integer year) {
         try {
             Function<Object, String> objectToString = (str) -> (Objects.isNull(str)) ? "" : str.toString();
-             String searchUrl = basicCatalogUrl + basicCatalogContextUrl + searchRequest
+            String searchUrl = basicCatalogUrl + basicCatalogContextUrl + searchRequest
                     + "title=" + objectToString.apply(title) + "&year=" + objectToString.apply(year);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -115,12 +144,13 @@ public class RequestService {
 
             List<BookDTO> books = new ArrayList<>();
             HttpEntity<List<BookDTO>> requestEntry = new HttpEntity<>(books, headers);
-            ResponseEntity<List<BookDTO>> response = restTemplate.exchange( searchUrl, HttpMethod.GET, requestEntry,
-                    new ParameterizedTypeReference<List<BookDTO>>(){} );
+            ResponseEntity<List<BookDTO>> response = restTemplate.exchange(searchUrl, HttpMethod.GET, requestEntry,
+                    new ParameterizedTypeReference<List<BookDTO>>() {
+                    });
             HttpStatusCode status = response.getStatusCode();
             return response.getBody();
-        }catch (Exception e){
-            log.error("Something wrong: " + e );
+        } catch (Exception e) {
+            log.error("Something wrong: " + e);
             return null;
         }
     }

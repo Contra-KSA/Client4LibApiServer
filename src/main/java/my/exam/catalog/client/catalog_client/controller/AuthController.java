@@ -30,7 +30,11 @@ public class AuthController {
     private final AuthService authService;
 
     @GetMapping
-    public ModelAndView auth() {
+    public ModelAndView auth(HttpServletResponse response) throws IOException {
+        if (catalogService.isCurrentUserAuthorized()) {
+            response.sendRedirect("/catalog");
+            return null;
+        }
         return new ModelAndView("login.jsp");
     }
 
@@ -57,8 +61,31 @@ public class AuthController {
         return null;
     }
 
-    @GetMapping("/user")
-    public ModelAndView createUser(){
-        return new ModelAndView("create_user.jsp");
+    @GetMapping("/users")
+    public ModelAndView createUser(HttpServletResponse response) throws IOException {
+        if (!catalogService.isCurrentUserAuthorized()) {
+            response.sendRedirect("/catalog");
+            return null;
+        }
+        return new ModelAndView("/createuser.jsp").addObject("message", "");
+    }
+
+    @PostMapping("/users")
+    public ModelAndView createUser(@RequestParam("login") String login,
+            @RequestParam("password") String password,
+            HttpServletResponse response) throws IOException {
+        if (!catalogService.isCurrentUserAuthorized()) {
+            response.sendRedirect("/catalog");
+            return null;
+        }
+        UserDto user = new UserDto(login, password);
+        ResponseEntity<UserDto> createResponse = requestService.createUser(user);
+        ModelAndView modelAndView = new ModelAndView("/createuser.jsp");
+        if (createResponse.getStatusCode().value() == 200) {
+            modelAndView.addObject("message", "OK");
+        } else {
+            modelAndView.addObject("message", "Creation forbidden");
+        }
+        return modelAndView;
     }
 }

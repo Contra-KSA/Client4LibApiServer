@@ -6,8 +6,11 @@ import java.io.IOException;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import my.exam.catalog.client.catalog_client.dto.BookDTO;
+import my.exam.catalog.client.catalog_client.dto.UserDto;
 import my.exam.catalog.client.catalog_client.sevice.AuthService;
 import my.exam.catalog.client.catalog_client.sevice.CatalogService;
+import my.exam.catalog.client.catalog_client.sevice.RequestService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +25,7 @@ public class CatalogController {
 
     private CatalogService catalogService;
     private AuthService authService;
+    private RequestService requestService;
 
     @GetMapping
     public ModelAndView welcome(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -84,4 +88,32 @@ public class CatalogController {
         authService.logout();
         response.sendRedirect("/catalog");
         return null;    }
+
+    @GetMapping("/users")
+    public ModelAndView createUser(HttpServletResponse response) throws IOException {
+        if (!catalogService.isCurrentUserAuthorized()) {
+            response.sendRedirect("/catalog");
+            return null;
+        }
+        return new ModelAndView("/createuser.jsp");
+    }
+
+    @PostMapping("/users")
+    public ModelAndView createUser(@RequestParam("login") String login,
+            @RequestParam("password") String password,
+            HttpServletResponse response) throws IOException {
+        if (!catalogService.isCurrentUserAuthorized()) {
+            response.sendRedirect("/catalog");
+            return null;
+        }
+        UserDto user = new UserDto(login, password);
+        ResponseEntity<UserDto> createResponse = requestService.createUser(user);
+        ModelAndView modelAndView = new ModelAndView("/createuser.jsp");
+        if (createResponse.getStatusCode().value() == 200) {
+            modelAndView.addObject("message", "OK");
+        } else {
+            modelAndView.addObject("message", "Creation forbidden");
+        }
+        return modelAndView;
+    }
 }
