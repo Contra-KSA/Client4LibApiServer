@@ -41,6 +41,7 @@ public class CatalogController {
     @GetMapping("/search")
     public ModelAndView search(@RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "year", required = false) Integer year,
+            @RequestParam(value = "author", required = false) String author,
             HttpServletResponse response) throws IOException {
         if (!catalogService.isCurrentUserAuthorized()) {
             response.sendRedirect("/auth");
@@ -48,7 +49,7 @@ public class CatalogController {
         }
         List<BookDTO> books = null;
         try {
-            books = catalogService.searchByTitleAnfYear(title, year);
+            books = catalogService.searchByConditions(title, year, author);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -79,7 +80,7 @@ public class CatalogController {
     }
 
     @PostMapping("/list")
-    public ModelAndView postListBooks(HttpServletResponse response) throws IOException{
+    public ModelAndView postListBooks(HttpServletResponse response) throws IOException {
         return listBooks(response);
     }
 
@@ -87,7 +88,8 @@ public class CatalogController {
     public ModelAndView logout(HttpServletResponse response) throws IOException {
         authService.logout();
         response.sendRedirect("/catalog");
-        return null;    }
+        return null;
+    }
 
     @GetMapping("/users")
     public ModelAndView createUser(HttpServletResponse response) throws IOException {

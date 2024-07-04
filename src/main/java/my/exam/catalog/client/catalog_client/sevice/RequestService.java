@@ -21,7 +21,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
@@ -131,11 +130,12 @@ public class RequestService {
         }
     }
 
-    public List<BookDTO> searchByTitleAndYear(String title, Integer year) {
+    public List<BookDTO> searchByConditions(String title, Integer year, String author) {
         try {
             Function<Object, String> objectToString = (str) -> (Objects.isNull(str)) ? "" : str.toString();
             String searchUrl = basicCatalogUrl + basicCatalogContextUrl + searchRequest
-                    + "title=" + objectToString.apply(title) + "&year=" + objectToString.apply(year);
+                    + "title=" + objectToString.apply(title) + "&year=" + objectToString.apply(year)
+                    + "&author=" + objectToString.apply(author);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));

@@ -26,13 +26,15 @@ public class CatalogService {
         repo.setCurrentUser(new User(user.getUsername(), jwtToken));
     }
 
-    public List<BookDTO> searchByTitleAnfYear(String title, Integer year) throws Exception {
+    public List<BookDTO> searchByConditions(String title, Integer year, String author) throws Exception {
         setSearchResult(null);
         try {
-            if ((Objects.isNull(title) || title.isEmpty()) && (Objects.isNull(year) || year.equals(0))) {
+            if ((Objects.isNull(title) || title.isEmpty())
+                    && (Objects.isNull(year) || year.equals(0))
+                    && (Objects.isNull(author) || author.isEmpty())) {
                 return requestService.findAll();
             } else {
-                return requestService.searchByTitleAndYear(title, year);
+                return requestService.searchByConditions(title, year, author);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

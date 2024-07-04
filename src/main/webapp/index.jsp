@@ -8,6 +8,7 @@
     <h4>Searching books by title and/or year</h4>
     Title: <input name="title"><br>
     Year: <input name="year"><br>
+    Author: <input name="author"><br>
     <br>
     <input type="submit" value="Search">
 </form>
